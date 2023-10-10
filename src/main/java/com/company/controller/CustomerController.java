@@ -1,12 +1,10 @@
 package com.company.controller;
 
 import com.company.dto.request.CustomerReq;
-import com.company.dto.request.CustomerUpdateReq;
 import com.company.dto.response.CustomerResp;
 import com.company.entity.Customer;
 import com.company.exception.CustomerNotFoundException;
 import com.company.mapper.CustomerMapper;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -58,13 +56,13 @@ public class CustomerController {
     }
 
     @PutMapping
-    public CustomerResp updateCustomer(@RequestBody CustomerUpdateReq customerUpdateReq) {
-        if (!customers.containsKey(customerUpdateReq.getId())){
+    public CustomerResp updateCustomer(@RequestParam(value = "customerId") Integer customerId, @RequestBody CustomerReq customerReq) {
+        if (!customers.containsKey(customerId)){
             throw new CustomerNotFoundException("Doesn`t exist customer");}
-        Customer customer = customers.get(customerUpdateReq.getId());
-        customer.setName(customerUpdateReq.getName());
-        customer.setAddress(customerUpdateReq.getAddress());
-        customer.setPhone(customerUpdateReq.getPhone());
+        Customer customer = customers.get(customerId);
+        customer.setName(customerReq.getName());
+        customer.setAddress(customerReq.getAddress());
+        customer.setPhone(customerReq.getPhone());
         customer.setUpdatedAt(LocalDate.now());
         customers.put(customer.getId(), customer);
         return customerMapper.toCustomerResp(customer);
