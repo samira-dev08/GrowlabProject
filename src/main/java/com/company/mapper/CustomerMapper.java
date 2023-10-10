@@ -2,7 +2,7 @@ package com.company.mapper;
 
 import com.company.dto.request.CustomerReq;
 import com.company.dto.response.CustomerResp;
-import com.company.entity.Customer;
+import com.company.domain.Customer;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 

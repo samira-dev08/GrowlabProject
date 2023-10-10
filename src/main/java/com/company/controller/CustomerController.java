@@ -2,9 +2,11 @@ package com.company.controller;
 
 import com.company.dto.request.CustomerReq;
 import com.company.dto.response.CustomerResp;
-import com.company.entity.Customer;
+import com.company.domain.Customer;
 import com.company.exception.CustomerNotFoundException;
+import com.company.exception.CustomizedException;
 import com.company.mapper.CustomerMapper;
+import com.company.service.CustomerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -19,66 +21,34 @@ import java.util.Map;
 @RequestMapping("/api/customers")
 @RequiredArgsConstructor
 public class CustomerController {
-    private final Map<Integer, Customer> customers;
-    private final CustomerMapper customerMapper;
+    public final CustomerService customerService;
 
     @GetMapping
     public List<Customer> getAllCustomers() {
-        List<Customer> customerList = new ArrayList<>(customers.values());
-        for (Map.Entry<Integer, Customer> entry : customers.entrySet()) {
-            Customer customer = entry.getValue();
-            customer.setId(entry.getKey());
-        }
-        return customerList;
+        return customerService.getAllCustomers();
     }
 
     @GetMapping("/{id}")
     public CustomerResp getCustomerById(@PathVariable int id) {
-        if (!customers.containsKey(id))
-            throw new CustomerNotFoundException("Doesnt exist customer");
-        Customer customer = customers.get(id);
-        if (customer == null) {
-            throw new CustomerNotFoundException("Customer not found");
-        }
-        CustomerResp customerResp = customerMapper.toCustomerResp(customer);
-        return customerResp;
+        return customerService.getCustomerById(id);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public void saveCustomer(@RequestBody @Valid CustomerReq customerReq) {
-        Customer customer = customerMapper.toCustomer(customerReq);
-        customer.setCreatedAt(LocalDate.now());
-        customer.setUpdatedAt(null);
-        int id = generateNextId();
-        customer.setId(id);
-        customers.put(id, customer);
+        customerService.saveCustomer(customerReq);
     }
 
     @PutMapping
     public CustomerResp updateCustomer(@RequestParam(value = "customerId") Integer customerId, @RequestBody CustomerReq customerReq) {
-        if (!customers.containsKey(customerId)){
-            throw new CustomerNotFoundException("Doesn`t exist customer");}
-        Customer customer = customers.get(customerId);
-        customer.setName(customerReq.getName());
-        customer.setAddress(customerReq.getAddress());
-        customer.setPhone(customerReq.getPhone());
-        customer.setUpdatedAt(LocalDate.now());
-        customers.put(customer.getId(), customer);
-        return customerMapper.toCustomerResp(customer);
+        CustomerResp customerResp = customerService.updateCustomer(customerId, customerReq);
+        return customerResp;
     }
 
     @DeleteMapping("/{id}")
     public void deleteCustomer(@PathVariable int id) {
-        if (!customers.containsKey(id)){
-            throw new CustomerNotFoundException("Doesnt exist customer");
-        }else{
-            customers.remove(id);
-        }
-
+        customerService.deleteCustomer(id);
     }
 
-    private int generateNextId() {
-        return customers.size() + 1;
-    }
+
 }
